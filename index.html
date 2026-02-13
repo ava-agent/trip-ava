@@ -1,196 +1,41 @@
 <!doctype html>
-<html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/ava-icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-<head>
-    <title>D-ID Streaming POC</title>
-    <!-- added google fonts -->
+    <!-- Primary Meta Tags -->
+    <title>AVA AI - 智能旅行助手</title>
+    <meta name="title" content="AVA AI - 智能旅行助手">
+    <meta name="description" content="您的智能旅行创作助手，生成精美旅行笔记、诗歌、点评，让分享更简单">
+    <link rel="canonical" href="https://ava.trip">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ava.trip/">
+    <meta property="og:title" content="AVA AI - 智能旅行助手">
+    <meta property="og:description" content="您的智能旅行创作助手，生成精美旅行笔记、诗歌、点评，让分享更简单">
+    <meta property="og:image" content="/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://ava.trip/">
+    <meta property="twitter:title" content="AVA AI - 智能旅行助手">
+    <meta property="twitter:description" content="您的智能旅行创作助手，生成精美旅行笔记、诗歌、点评，让分享更简单">
+    <meta property="twitter:image" content="/twitter-image.jpg">
+
+    <!-- Google Fonts - Outfit + Work Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <style>
-        .peerConnectionState-new {
-            color: cornflowerblue;
-        }
-
-        .peerConnectionState-connecting {
-            color: orange;
-        }
-
-        .peerConnectionState-connected {
-            color: green;
-        }
-
-        .peerConnectionState-disconnected,
-        .peerConnectionState-closed,
-        .peerConnectionState-failed {
-            color: red;
-        }
-
-        .iceConnectionState-new {
-            color: cornflowerblue;
-        }
-
-        .iceConnectionState-checking {
-            color: orange;
-        }
-
-        .iceConnectionState-connected,
-        .iceConnectionState-completed {
-            color: green;
-        }
-
-        .peerConnectionState-disconnected,
-        .peerConnectionState-closed,
-        .peerConnectionState-failed {
-            color: red;
-        }
-
-        .iceGatheringState-new {
-            color: cornflowerblue;
-        }
-
-        .iceGatheringState-gathering {
-            color: orange;
-        }
-
-        .iceGatheringState-complete {
-            color: black;
-        }
-
-        .signalingState-stable {
-            color: green;
-        }
-
-        .signalingState-have-local-offer,
-        .signalingState-have-remote-offer,
-        .signalingState-have-local-pranswer,
-        .signalingState-have-remote-pranswer {
-            color: cornflowerblue;
-        }
-
-        .signalingState-closed {
-            color: red;
-        }
-
-
-        /* added css from here */
-
-        body * {
-            font-family: 'Mulish', sans-serif;
-            text-align: center;
-        }
-
-        #content {
-            width: 820px;
-            position: relative;
-            margin: 0 auto;
-        }
-
-        #buttons {
-            clear: both;
-            padding: 0 0 0 0;
-            text-align: center;
-        }
-
-        button {
-            padding: 10px 20px;
-            border-radius: 5px;
-            border: none;
-            font-size: 16px;
-            margin: 0 5px;
-            background-color: #7459FE;
-            color: #fff;
-        }
-
-        button:hover {
-            background-color: #9480FF;
-            cursor: pointer;
-            transition: all 0.2s ease-out;
-        }
-
-        #status {
-            clear: both;
-            padding: 20px 0 0 0;
-            text-align: left;
-            display: inline-block;
-            zoom: 1;
-            line-height: 140%;
-            font-size: 15px;
-        }
-
-        #status div {
-            padding-bottom: 10px;
-        }
-
-        #video-wrapper {
-            background: url(bg.png);
-            height: 500px;
-            background-position: top;
-        }
-
-        #video-wrapper div {
-            width: 400px;
-            margin: 0 auto;
-            padding: 50px 0 0 0;
-        }
-
-        video {
-            display: block;
-            /*border:1px solid;*/
-            border-radius: 50%;
-            background-color: #fff;
-        }
-    </style>
-</head>
-
-<body>
-<!-- adde "id=content" -->
-<div id="content">
-
-    <div>
-        <label for="name">你好!</label>
-        <input type="text" id="name" name="name" value="欣雨">
-
-        <label for="city">旅行目的地:</label>
-        <input type="city" id="city" name="city" value="大理"><br><br>
-    </div>
-
-    <!-- added "id=video-wrapper" -->
-    <div id="video-wrapper">
-        <div>
-            <video id="talk-video" width=400 height=400 autoplay></video>
-        </div>
-    </div>
-    <br>
-
-    <!-- added div#buttons -->
-    <div id="buttons">
-        <button id="connect-button" type="button">进入AI世界🤖️</button>
-        <button id="talk-button" type="button">Hi! Ava~👧</button>
-        <button id="destroy-button" type="button">再聊点别的💃</button>
-    </div>
-
-    <!-- added div#status -->
-    <div id="status">
-        <!-- removed the wrapping <div> tags -->
-        流连接状态: <label id="ice-gathering-status-label"></label><br>
-        流状态: <label id="ice-status-label"></label><br>
-        Ava正在赶来: <label id="peer-status-label"></label><br>
-        Ava状态: <label id="signaling-status-label"></label><br>
-    </div>
-
-    <form id="upload-form">
-        <input type="file" name="images" multiple>
-        <button type="submit">生成旅行回忆..</button>
-    </form>
-    <div id="result"></div>
-
-</div>
-
-<script type="module" src="./index.js"></script>
-
-
-</body>
-
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0EA5E9">
+    <meta name="msapplication-TileColor" content="#0EA5E9">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
