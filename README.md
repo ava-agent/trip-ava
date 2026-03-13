@@ -17,6 +17,27 @@
 ### 技术方案
 ![技术方案](images/技术方案.jpg)
 
+## 🏗️ 系统架构
+
+![系统架构](images/architecture.png)
+
+### 架构分层说明
+
+| 层级 | 模块 | 职责 |
+|------|------|------|
+| **UI 层** | ChatPage, UI Components | 页面渲染、用户交互、样式展示 |
+| **状态管理层** | Zustand Stores | 全局状态管理（对话、UI、设置） |
+| **服务层** | API Services | API 调用封装、Mock 数据支持 |
+| **外部服务层** | Backend, Voice Service | 后端 API、语音识别服务 |
+
+### 核心模块
+
+- **ChatPage** - 主聊天页面，处理用户对话交互
+- **VoiceInputButton** - 语音输入组件，支持语音转文字
+- **chatStore** - 对话状态管理（消息列表、会话状态）
+- **avaApi** - AVA 后端 API 调用封装
+- **mockApi** - 开发环境 Mock 数据服务
+
 ## ✨ 特性
 
 - 🎨 **极简设计** - 豆包风格的纯白背景，专注对话体验
