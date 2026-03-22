@@ -1,0 +1,101 @@
+/* Inter Font - Clean, Modern */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* AVA Brand Colors - Doubao inspired */
+    --primary: 124 58% 237%; /* #7C3AED - Violet */
+    --primary-hover: 139 85% 250%; /* #8B5CF6 */
+    --background: 0 0% 100%; /* #FFFFFF */
+    --foreground: 30 41% 59%; /* #1E293B - Slate 800 */
+    --muted: 241 245% 249%; /* #F1F5F9 - Slate 100 */
+    --border: 226 232% 240%; /* #E2E8F0 - Slate 200 */
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-white text-gray-900;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  /* Focus Visible */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-violet-500 ring-offset-2;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-violet-200 text-violet-900;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 hover:bg-gray-400 rounded-full;
+  }
+
+  /* Cursor */
+  button, a, .cursor-pointer {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  /* Input Styles */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl bg-gray-100 hover:bg-white;
+    @apply text-gray-900 placeholder:text-gray-400;
+    @apply transition-colors duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-violet-500;
+    @apply border-2 border-transparent;
+  }
+
+  /* Message Bubbles */
+  .message-user {
+    @apply bg-violet-500 text-white;
+    @apply rounded-2xl rounded-tr-sm;
+  }
+
+  .message-ava {
+    @apply bg-gray-100 text-gray-900;
+    @apply rounded-2xl rounded-tl-sm;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
