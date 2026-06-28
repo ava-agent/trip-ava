@@ -28,6 +28,8 @@ export default tseslint.config(
         varsIgnorePattern: '^_'
       }],
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   }

@@ -10,133 +10,98 @@ describe('SettingsStore', () => {
 
   describe('Initial State', () => {
     it('should have default settings', () => {
-      const { settings } = useSettingsStore.getState()
+      const state = useSettingsStore.getState()
 
-      expect(settings.theme).toBe('dark')
-      expect(settings.language).toBe('zh-CN')
-      expect(settings.notifications).toBe(true)
-      expect(settings.soundEnabled).toBe(true)
-      expect(settings.voiceEnabled).toBe(true)
-      expect(settings.autoPlay).toBe(false)
+      expect(state.apiMode).toBe('real')
+      expect(state.apiBaseUrl).toBe('')
+      expect(state.theme).toBe('light')
+      expect(state.language).toBe('zh')
+      expect(state.voiceEnabled).toBe(false)
+      expect(state.imageEnabled).toBe(false)
+      expect(state.videoEnabled).toBe(false)
     })
   })
 
-  describe('updateSettings', () => {
-    it('should update single setting', () => {
-      const { updateSettings } = useSettingsStore.getState()
+  describe('setters', () => {
+    it('should update API settings', () => {
+      const { setApiMode, setApiBaseUrl } = useSettingsStore.getState()
 
-      updateSettings({ theme: 'light' })
+      setApiMode('mock')
+      setApiBaseUrl('https://api.example.com')
 
-      const { settings } = useSettingsStore.getState()
-      expect(settings.theme).toBe('light')
+      const state = useSettingsStore.getState()
+      expect(state.apiMode).toBe('mock')
+      expect(state.apiBaseUrl).toBe('https://api.example.com')
     })
 
-    it('should update multiple settings', () => {
-      const { updateSettings } = useSettingsStore.getState()
+    it('should update feature flags', () => {
+      const { setVoiceEnabled, setImageEnabled, setVideoEnabled } = useSettingsStore.getState()
 
-      updateSettings({
-        theme: 'light',
-        language: 'en-US',
-        notifications: false
-      })
+      setVoiceEnabled(true)
+      setImageEnabled(true)
+      setVideoEnabled(true)
 
-      const { settings } = useSettingsStore.getState()
-      expect(settings.theme).toBe('light')
-      expect(settings.language).toBe('en-US')
-      expect(settings.notifications).toBe(false)
+      const state = useSettingsStore.getState()
+      expect(state.voiceEnabled).toBe(true)
+      expect(state.imageEnabled).toBe(true)
+      expect(state.videoEnabled).toBe(true)
     })
 
-    it('should preserve unchanged settings', () => {
-      const { updateSettings } = useSettingsStore.getState()
+    it('should update user preferences', () => {
+      const { setLanguage, setTheme } = useSettingsStore.getState()
 
-      updateSettings({ theme: 'light' })
+      setLanguage('en')
+      setTheme('dark')
 
-      const { settings } = useSettingsStore.getState()
-      expect(settings.language).toBe('zh-CN') // unchanged
-      expect(settings.notifications).toBe(true) // unchanged
-    })
-
-    it('should accept all valid theme values', () => {
-      const { updateSettings } = useSettingsStore.getState()
-
-      updateSettings({ theme: 'light' })
-      expect(useSettingsStore.getState().settings.theme).toBe('light')
-
-      updateSettings({ theme: 'dark' })
-      expect(useSettingsStore.getState().settings.theme).toBe('dark')
-
-      updateSettings({ theme: 'auto' })
-      expect(useSettingsStore.getState().settings.theme).toBe('auto')
-    })
-
-    it('should accept all valid language values', () => {
-      const { updateSettings } = useSettingsStore.getState()
-
-      updateSettings({ language: 'zh-CN' })
-      expect(useSettingsStore.getState().settings.language).toBe('zh-CN')
-
-      updateSettings({ language: 'en-US' })
-      expect(useSettingsStore.getState().settings.language).toBe('en-US')
-
-      updateSettings({ language: 'ja-JP' })
-      expect(useSettingsStore.getState().settings.language).toBe('ja-JP')
-    })
-
-    it('should accept boolean values', () => {
-      const { updateSettings } = useSettingsStore.getState()
-
-      updateSettings({
-        notifications: false,
-        soundEnabled: false,
-        voiceEnabled: false,
-        autoPlay: true
-      })
-
-      const { settings } = useSettingsStore.getState()
-      expect(settings.notifications).toBe(false)
-      expect(settings.soundEnabled).toBe(false)
-      expect(settings.voiceEnabled).toBe(false)
-      expect(settings.autoPlay).toBe(true)
+      const state = useSettingsStore.getState()
+      expect(state.language).toBe('en')
+      expect(state.theme).toBe('dark')
     })
   })
 
   describe('resetSettings', () => {
     it('should reset all settings to defaults', () => {
-      const { updateSettings, resetSettings } = useSettingsStore.getState()
+      const {
+        setApiMode,
+        setApiBaseUrl,
+        setVoiceEnabled,
+        setImageEnabled,
+        setVideoEnabled,
+        setLanguage,
+        setTheme,
+        resetSettings,
+      } = useSettingsStore.getState()
 
-      // Update all settings
-      updateSettings({
-        theme: 'light',
-        language: 'en-US',
-        notifications: false,
-        soundEnabled: false,
-        voiceEnabled: false,
-        autoPlay: true
-      })
+      setApiMode('mock')
+      setApiBaseUrl('https://api.example.com')
+      setVoiceEnabled(true)
+      setImageEnabled(true)
+      setVideoEnabled(true)
+      setLanguage('en')
+      setTheme('dark')
 
-      // Reset
       resetSettings()
 
-      // Should be back to defaults
-      const { settings } = useSettingsStore.getState()
-      expect(settings.theme).toBe('dark')
-      expect(settings.language).toBe('zh-CN')
-      expect(settings.notifications).toBe(true)
-      expect(settings.soundEnabled).toBe(true)
-      expect(settings.voiceEnabled).toBe(true)
-      expect(settings.autoPlay).toBe(false)
+      const state = useSettingsStore.getState()
+      expect(state.apiMode).toBe('real')
+      expect(state.apiBaseUrl).toBe('')
+      expect(state.theme).toBe('light')
+      expect(state.language).toBe('zh')
+      expect(state.voiceEnabled).toBe(false)
+      expect(state.imageEnabled).toBe(false)
+      expect(state.videoEnabled).toBe(false)
     })
   })
 
   describe('Store Immutability', () => {
-    it('should not mutate original settings when updating', () => {
-      const { updateSettings } = useSettingsStore.getState()
-      const originalSettings = { ...useSettingsStore.getState().settings }
+    it('should not mutate previous state snapshots when updating', () => {
+      const { setTheme } = useSettingsStore.getState()
+      const originalState = { ...useSettingsStore.getState() }
 
-      updateSettings({ theme: 'light' })
+      setTheme('dark')
 
-      // Original should be unchanged
-      expect(originalSettings.theme).toBe('dark')
+      expect(originalState.theme).toBe('light')
+      expect(useSettingsStore.getState().theme).toBe('dark')
     })
   })
 })

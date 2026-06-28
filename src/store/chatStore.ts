@@ -12,7 +12,10 @@ interface ChatStore extends ChatState {
   setError: (error: string | null) => void
 }
 
-export const useChatStore = create<ChatStore>((set, get) => ({
+const createConversationId = () =>
+  globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
+
+export const useChatStore = create<ChatStore>((set) => ({
   conversations: [],
   currentConversationId: null,
   isLoading: false,
@@ -34,7 +37,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   createConversation: (title = '新对话') => {
     const newConversation: Conversation = {
-      id: Date.now().toString(),
+      id: createConversationId(),
       title,
       messages: [],
       createdAt: new Date(),

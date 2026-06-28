@@ -20,17 +20,14 @@ type ApiClientType = typeof apiClient | typeof mockApiClient
 export const getService = (useMock: boolean = false): ApiClientType => {
   // Check if we should use mock service
   if (useMock || import.meta.env.VITE_USE_MOCK_API === 'true') {
-    console.log('🔧 Using Mock API Service')
     return mockApiClient as ApiClientType
   }
 
   // Check if API base URL is configured
   if (!import.meta.env.VITE_API_BASE_URL) {
-    console.warn('⚠️ No API_BASE_URL configured, using Mock API')
     return mockApiClient as ApiClientType
   }
 
-  console.log('🌐 Using Real API Service')
   return apiClient
 }
 

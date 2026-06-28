@@ -1,54 +1,56 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { apiClient } from '@/services/api'
-import { ApiResponse, TravelNoteRequest, TravelNoteResponse } from '@/services/api'
 
 // Mock fetch
 global.fetch = vi.fn()
 
+type ApiClientConstructor = new (config: {
+  baseURL: string
+  timeout: number
+}) => typeof apiClient
+
+const createApiClient = (baseURL = 'http://localhost:8080', timeout = 30000) =>
+  new (apiClient.constructor as ApiClientConstructor)({ baseURL, timeout })
+
 describe('API Client', () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    // Set default environment
-    // @ts-ignore - setting env var for testing
-    process.env.VITE_API_BASE_URL = 'http://localhost:8080'
   })
 
   describe('Configuration', () => {
-    it('should have default base URL', () => {
-      // @ts-ignore - accessing private property for testing
-      expect(apiClient['baseURL']).toBe('http://localhost:8080')
+    it('should have default empty base URL when env is not configured', () => {
+      expect(apiClient['baseURL']).toBe('')
     })
 
     it('should have default timeout', () => {
-      // @ts-ignore - accessing private property for testing
       expect(apiClient['timeout']).toBe(30000)
     })
   })
 
   describe('Request Method', () => {
     it('should make successful GET request', async () => {
+      const client = createApiClient()
       const mockData = { message: 'Success' }
       ;(fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockData
       })
 
-      // @ts-ignore - testing private method
-      const result = await apiClient.request('/test', { method: 'GET' })
+      const result = await client['request']('/test', { method: 'GET' })
 
       expect(result.success).toBe(true)
       expect(result.data).toEqual(mockData)
     })
 
     it('should make successful POST request', async () => {
+      const client = createApiClient()
       const mockData = { created: true }
       ;(fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockData
       })
 
-      // @ts-ignore - testing private method
-      const result = await apiClient.request('/test', {
+      const result = await client['request']('/test', {
         method: 'POST',
         body: JSON.stringify({ test: 'data' })
       })
@@ -66,55 +68,51 @@ describe('API Client', () => {
     })
 
     it('should handle HTTP error response', async () => {
+      const client = createApiClient()
       ;(fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 404,
         json: async () => ({ error: 'Not found' })
       })
 
-      // @ts-ignore - testing private method
-      const result = await apiClient.request('/test')
+      const result = await client['request']('/test')
 
       expect(result.success).toBe(false)
       expect(result.error).toContain('404')
     })
 
     it('should handle network error', async () => {
+      const client = createApiClient()
       ;(fetch as any).mockRejectedValueOnce(new Error('Network error'))
 
-      // @ts-ignore - testing private method
-      const result = await apiClient.request('/test')
+      const result = await client['request']('/test')
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Network error')
     })
 
     it('should handle timeout', async () => {
-      ;(fetch as any).mockImplementationOnce(() =>
-        new Promise((resolve) => setTimeout(resolve, 5000))
+      ;(fetch as any).mockImplementationOnce((_: string, options: RequestInit) =>
+        new Promise((_, reject) => {
+          options.signal?.addEventListener('abort', () => reject(new Error('AbortError')))
+        })
       )
 
-      // @ts-ignore - testing private method with short timeout
-      const shortTimeoutClient = new (apiClient.constructor as any)({
-        baseURL: 'http://localhost:8080',
-        timeout: 100
-      })
+      const shortTimeoutClient = createApiClient('http://localhost:8080', 10)
 
-      // @ts-ignore
-      const result = await shortTimeoutClient.request('/test')
+      const result = await shortTimeoutClient['request']('/test')
 
       expect(result.success).toBe(false)
+      expect(result.error).toBe('AbortError')
     })
   })
 
-  describe('Travel Note API', () => {
-    it('should generate travel note', async () => {
-      const mockResponse: TravelNoteResponse = {
-        noteId: '123',
-        title: 'Test Trip',
-        content: 'Test content',
-        htmlContent: '<p>Test</p>',
-        generatedAt: '2024-01-01'
+  describe('Core APIs', () => {
+    it('should send a chat message', async () => {
+      const client = createApiClient()
+      const mockResponse = {
+        reply: '您好，我是 AVA。',
+        timestamp: '2026-06-28T00:00:00.000Z',
       }
 
       ;(fetch as any).mockResolvedValueOnce({
@@ -122,54 +120,26 @@ describe('API Client', () => {
         json: async () => mockResponse
       })
 
-      const request: TravelNoteRequest = {
+      const request = {
         sessionId: 'session-1',
-        content: 'Test trip content',
-        style: 'casual',
-        length: 'medium'
+        message: '你好',
       }
 
-      const result = await apiClient.generateTravelNote(request)
+      const result = await client.chat(request)
 
       expect(result.success).toBe(true)
       expect(result.data).toEqual(mockResponse)
       expect(fetch).toHaveBeenCalledWith(
-        'http://localhost:8080/ava/generate/travel-note',
+        'http://localhost:8080/ava/chat',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify(request)
+          body: JSON.stringify(request),
         })
       )
     })
-  })
 
-  describe('Poetry API', () => {
-    it('should generate poetry', async () => {
-      const mockResponse = {
-        poemId: '456',
-        title: 'Test Poem',
-        content: 'Roses are red',
-        style: 'modern'
-      }
-
-      ;(fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse
-      })
-
-      const result = await apiClient.generatePoetry({
-        sessionId: 'session-1',
-        theme: 'Love',
-        style: 'modern'
-      })
-
-      expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockResponse)
-    })
-  })
-
-  describe('File Upload API', () => {
     it('should upload voice file', async () => {
+      const client = createApiClient()
       const mockResponse = {
         transcription: 'Hello world',
         confidence: 0.95
@@ -182,7 +152,7 @@ describe('API Client', () => {
 
       const mockFile = new Blob(['audio data'], { type: 'audio/mpeg' })
 
-      const result = await apiClient.uploadVoice({
+      const result = await client.uploadVoice({
         sessionId: 'session-1',
         audioData: mockFile,
         format: 'mp3'
@@ -190,102 +160,60 @@ describe('API Client', () => {
 
       expect(result.success).toBe(true)
       expect(result.data).toEqual(mockResponse)
-    })
-
-    it('should upload image file', async () => {
-      const mockResponse = {
-        description: 'A beautiful landscape',
-        tags: ['mountain', 'lake'],
-        landmarks: [],
-        suggestions: ['Visit this place']
-      }
-
-      ;(fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse
-      })
-
-      const mockFile = new Blob(['image data'], { type: 'image/jpeg' })
-
-      const result = await apiClient.uploadImage({
-        sessionId: 'session-1',
-        imageData: mockFile,
-        position: { lat: 40.7128, lng: -74.0060 }
-      })
-
-      expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockResponse)
-    })
-  })
-
-  describe('Text and Session APIs', () => {
-    it('should submit text', async () => {
-      ;(fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ message: 'Success' })
-      })
-
-      const result = await apiClient.submitText('session-1', 'Test text')
-
-      expect(result.success).toBe(true)
       expect(fetch).toHaveBeenCalledWith(
-        'http://localhost:8080/upload/text',
+        'http://localhost:8080/ava/voice',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({ sessionId: 'session-1', text: 'Test text' })
+          body: expect.any(FormData),
         })
       )
     })
 
-    it('should get trip session', async () => {
-      const mockSession = { sessionId: 'session-1', notes: [] }
-      ;(fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockSession
-      })
-
-      const result = await apiClient.getTripSession('session-1')
-
-      expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockSession)
-    })
-
-    it('should create trip session', async () => {
+    it('should create an AVA session', async () => {
+      const client = createApiClient()
       const mockResponse = { sessionId: 'new-session' }
+
       ;(fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse
       })
 
-      const result = await apiClient.createTripSession('Paris', 'user-1')
+      const result = await client.createSession('user-1')
 
       expect(result.success).toBe(true)
       expect(result.data).toEqual(mockResponse)
+      expect(fetch).toHaveBeenCalledWith(
+        'http://localhost:8080/ava/session/create',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ userId: 'user-1' }),
+        })
+      )
     })
-  })
 
-  describe('AVA Hello API', () => {
     it('should get hello message', async () => {
+      const client = createApiClient()
       const mockResponse = { content: 'Hello! I am AVA, your travel assistant.' }
       ;(fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse
       })
 
-      const result = await apiClient.avaHello('user-1')
+      const result = await client.avaHello('user-1')
 
       expect(result.success).toBe(true)
       expect(result.data).toEqual(mockResponse)
     })
 
     it('should get voice synthesis', async () => {
+      const client = createApiClient()
       const mockResponse = { voiceUrl: 'https://example.com/voice.mp3' }
       ;(fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse
       })
 
-      const result = await apiClient.avaSpeak('user-1', 'Hello world')
+      const result = await client.avaSpeak('Hello world', 'user-1')
 
       expect(result.success).toBe(true)
       expect(result.data).toEqual(mockResponse)

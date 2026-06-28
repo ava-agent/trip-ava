@@ -1,4 +1,4 @@
-import { AlertCircle, RefreshCw, X, Sparkles } from 'lucide-react'
+import { AlertCircle, RefreshCw, X } from 'lucide-react'
 import { useState } from 'react'
 
 interface ErrorDisplayProps {

@@ -86,7 +86,7 @@ export class MockApiClient {
    * Upload Voice for Speech-to-Text + AI Response
    */
   async uploadVoice(
-    request: VoiceRequest
+    _request: VoiceRequest
   ): Promise<ApiResponse<VoiceResponse>> {
     await delay(2000)
 

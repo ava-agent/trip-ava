@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Mic, MicOff, X } from 'lucide-react'
+import { Mic, X } from 'lucide-react'
 
 interface VoiceInputButtonProps {
   onRecordingComplete: (text: string, audioBlob?: Blob) => void
